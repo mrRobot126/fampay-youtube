@@ -1,7 +1,10 @@
+## This file contains all req-response models
+
 import datetime
 from typing import List
 from pyparsing import Optional
 from pydantic import BaseModel
+
 
 
 class ChannelDetails(BaseModel):

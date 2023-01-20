@@ -5,8 +5,9 @@ from abc import ABC, abstractmethod
 class ServiceKey(enum.Enum):
     YOUTUBE_API_SVC = 1
     DB_CONN = 2
-    INDEXER_DB_SVC = 3
-    DB_SVC = 4
+    VC_SEARCH_SVC = 3
+    VC_DB_SVC = 4
+    CONFIG_SVC = 5
 
 class BaseAsyncService(ABC):
 

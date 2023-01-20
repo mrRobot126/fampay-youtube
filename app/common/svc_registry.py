@@ -1,6 +1,8 @@
 import logging
-from pipeline.common.svc import AsycnS3Service, DatabaseConnectionSvc, ServiceKey, AsyncVespaService, AsyncIndexingSvc, TelegramAsyncIndexerDBService
-from pipeline.common.svc.db_conn_pool_svc import DatabaseConnectionPoolSvc
+from app.common.svc.base_svc import ServiceKey
+from app.common.svc.db_conn_svc import DatabaseConnectionPoolSvc
+from app.common.svc.impl.postgres.pg_config_db_svc import PostgresConfigDBService
+from app.common.svc.impl.postgres.pg_vc_db_svc import PostgresVideoCatalogDBService
 
 class SvcRegistry:
 
@@ -11,20 +13,7 @@ class SvcRegistry:
         self.config = config
 
     async def initialise(self):
-        s3_key, s3_session = await self._initialise_s3_session()
-        self.svc_dict[s3_key] = s3_session
-
-        db_conn_key, db_conn = await self._initialise_db_pool_client()
-        self.svc_dict[db_conn_key] = db_conn
-
-        indexer_db_key, indexer_db_svc = await self._initialise_indexer_db_svc(db_conn)
-        self.svc_dict[indexer_db_key] = indexer_db_svc
-
-        vespa_key, vespa = await self._initialise_vespa_client()
-        self.svc_dict[vespa_key] = vespa
-
-        indexing_svc_key, indexing_svc = await self._initialise_indexing_svc(indexer_db_svc, vespa)
-        self.svc_dict[indexing_svc_key] = indexing_svc
+        pass
 
     @classmethod
     def get_svc(cls, key: ServiceKey):
@@ -33,43 +22,20 @@ class SvcRegistry:
         else:
             raise ValueError("Service not registred for key: {}".format(key))
 
-    async def _initialise_db_client(self):
-        CONN_STRING = self.config["db_conn"]
-        conn = DatabaseConnectionSvc(CONN_STRING)
-        await conn.init()
-        return (ServiceKey.DB_CONN, conn)
-
     async def _initialise_db_pool_client(self):
         CONN_STRING = self.config["db_conn"]
         conn = DatabaseConnectionPoolSvc(CONN_STRING)
         await conn.init()
         return (ServiceKey.DB_CONN, conn)
 
-    async def _initialise_indexer_db_svc(self, conn):
-        indexer_db_svc = TelegramAsyncIndexerDBService(conn)
-        await indexer_db_svc.init()
-        return (ServiceKey.INDEXER_DB_SVC, indexer_db_svc)
-
-    async def _initialise_s3_session(self):
-        AWS_ACCESS_KEY = self.config["aws_access_key_id"]
-        AWS_ACCESS_SECRET = self.config["aws_access_key_secret"]
-        s3_session = AsycnS3Service(AWS_ACCESS_KEY, AWS_ACCESS_SECRET)
-        await s3_session.init()
-        return (ServiceKey.S3_SESSION, s3_session)
+    async def _initialise_pg_vc_db_svc(self, conn):
+        vc_db_svc = PostgresVideoCatalogDBService(conn)
+        return (ServiceKey.VC_DB_SVC, vc_db_svc)
     
-    async def _initialise_vespa_client(self):
-        VESPA_URL = self.config["vespa_url"]
-        vespa_svc = AsyncVespaService(VESPA_URL)
-        await vespa_svc.init()
-        return (ServiceKey.VESPA, vespa_svc)
-
-    async def _initialise_indexing_svc(self, index_db_svc: TelegramAsyncIndexerDBService, vespa_svc: AsyncVespaService):
-        indexing_svc = AsyncIndexingSvc()
-        await indexing_svc.init(index_db_svc, vespa_svc)
-        return (ServiceKey.INDEXING_SVC, indexing_svc)
-
-    async def terminate(self):
-        self.logger.info("Terminating Svc..")
-        for svc in self.svc_dict:
-            await self.svc_dict[svc].terminate()
-        self.logger.info("Done Terminating Svc..")
+    async def _initialise_pg_config_svc(self, conn):
+        vc_config_svc = PostgresConfigDBService(conn)
+        return (ServiceKey.CONFIG_SVC, vc_config_svc)
+    
+    async def _initialise_pg_search_svc(self, conn):
+        vc_search_svc = PostgresConfigDBService(conn)
+        return (ServiceKey.VC_SEARCH_SVC, vc_search_svc)

@@ -51,3 +51,5 @@ docs/_build/
 
 
 .env
+
+youtube_api_test.py

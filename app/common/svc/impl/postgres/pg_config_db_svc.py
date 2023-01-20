@@ -1,10 +1,10 @@
 import json
 import logging
 from typing import List
-from app.common.svc.base_svc import BaseAsyncService
-from app.common.svc.config_db_svc import ConfigDBService, last_sync_tuple, auth_record
-from app.common.svc.db_conn_svc import DatabaseConnectionPoolSvc
-from app.common.constants import AuthStatus
+from common.svc.base_svc import BaseAsyncService
+from common.svc.config_db_svc import ConfigDBService, last_sync_tuple, auth_record
+from common.svc.db_conn_svc import DatabaseConnectionPoolSvc
+from common.constants import AuthStatus
 
 
 class PostgresConfigDBService(BaseAsyncService, ConfigDBService):
@@ -22,6 +22,16 @@ class PostgresConfigDBService(BaseAsyncService, ConfigDBService):
 
     def get(self):
         return self
+
+    async def insert_auth_token(self, vendor: str, auth_method: str, config):
+        await self.conn_svc.execute(
+            """
+                INSERT INTO auth_tokens(vendor, auth_method, config) VALUES($1, $2, $3)
+            """,
+            vendor,
+            auth_method,
+            json.dumps(config)
+        )
         
     async def get_last_sync_time_for_vendor(self, vendor: str) -> last_sync_tuple:
         record = await self.conn_svc.fetchrow(
@@ -41,6 +51,7 @@ class PostgresConfigDBService(BaseAsyncService, ConfigDBService):
 
 
     async def get_record_for_vendor_and_method_and_status(self, vendor: str, method: str, status: AuthStatus) -> List[auth_record]:
+        self.logger.error('%s %s %s', vendor, method, status.value)
         records = await self.conn_svc.fetch(
             """
                 SELECT
@@ -50,7 +61,7 @@ class PostgresConfigDBService(BaseAsyncService, ConfigDBService):
             """,
             vendor,
             method,
-            status
+            status.value
         )
 
         if records:
@@ -70,4 +81,4 @@ class PostgresConfigDBService(BaseAsyncService, ConfigDBService):
         )
 
     def _parse_auth_record(self, record) -> auth_record:
-        return auth_record(record['id'], record['vendor'], record['method'], json.loads(record['config']))
+        return auth_record(record['id'], record['vendor'], record['status'], record['method'], json.loads(record['config']))

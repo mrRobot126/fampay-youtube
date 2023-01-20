@@ -1,10 +1,10 @@
 from ast import List
 import json
 import logging
-from app.common.constants import SortOrder
-from app.common.svc.base_svc import BaseAsyncService
-from app.common.svc.db_conn_svc import DatabaseConnectionPoolSvc
-from app.common.svc.vid_catalog_svc import VideoCatalogDBService, record_tuple
+from common.constants import SortOrder
+from common.svc.base_svc import BaseAsyncService
+from common.svc.db_conn_svc import DatabaseConnectionPoolSvc
+from common.svc.video_catalog_db_svc import VideoCatalogDBService, record_tuple
 
 
 class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
@@ -28,23 +28,24 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
         result = await self.conn.fetchrow(
             """
                 INSERT INTO video_catalog AS vc 
-                (source, video_id, title, description, thumbnails, published_at duration_sec, content_definition, privacy_status, views_count, like_count, favourite_count, comment_count) 
+                (source, video_id, title, description, thumbnails, published_at, duration_sec, content_definition, privacy_status, views_count, like_count, favourite_count, comment_count) 
                 VALUES($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
                 ON CONFLICT(video_id)
-                UPDATE SET 
+                DO UPDATE SET 
                 title = excluded.title, 
                 description = excluded.description, 
                 privacy_status = excluded.privacy_status, 
                 views_count = GREATEST(excluded.views_count, vc.views_count),
                 like_count = GREATEST(excluded.like_count, vc.like_count),
                 favourite_count = GREATEST(excluded.favourite_count, vc.favourite_count),
-                comment_count = GREATEST(excluded.comment_count, vc.comment_count),
+                comment_count = GREATEST(excluded.comment_count, vc.comment_count)
+                RETURNING *, CASE WHEN xmax::text::int > 0 THEN false ELSE true END AS is_insert
             """,
             record.source,
             record.video_id,
             record.title,
             record.description,
-            record.thumbnails,
+            json.dumps(record.thumbnails),
             record.published_at,
             record.duration_sec,
             record.content_definition,
@@ -68,17 +69,16 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
         return self._parse_video_record(record)
 
 
-    async def get_records_by_published_date(self, offset: int, limit: int, sort_order: SortOrder) -> List[record_tuple]:
-
-        records =self.conn.fetch("""
+    async def get_records_by_published_date(self, offset: int, limit: int, sort_order: SortOrder):
+        self.logger.error('%s %s %s', offset, limit, sort_order)
+        records = await self.conn.fetch("""
             SELECT
                 *
             FROM video_catalog vc
-            ORDER BY vc.published_date $1
-            OFFSET $2
-            LIMIT $3
+            ORDER BY vc.published_at desc
+            OFFSET $1
+            LIMIT $2
         """,
-        sort_order,
         offset,
         limit
         )
@@ -97,7 +97,6 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
             title=record['title'],
             description=record['description'],
             thumbnails=json.loads(record['thumbnails']),
-            channel_title=record['channel_title'],
             duration_sec=record['duration_sec'],
             likes_count=record['like_count'],
             views_count=record['views_count'],

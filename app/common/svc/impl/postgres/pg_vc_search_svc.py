@@ -1,11 +1,11 @@
 import json
 import logging
 from typing import List
-from app.common.constants import QueryType
-from app.common.svc.base_svc import BaseAsyncService
-from app.common.svc.db_conn_svc import DatabaseConnectionPoolSvc
-from app.common.svc.vid_catalog_svc import VideoCatalogSearchService, search_record_tuple
-from app.common.constants import AuthStatus
+from common.constants import QueryType
+from common.svc.base_svc import BaseAsyncService
+from common.svc.db_conn_svc import DatabaseConnectionPoolSvc
+from common.svc.video_catalog_db_svc import VideoCatalogSearchService, search_record_tuple
+from common.constants import AuthStatus
 
 
 class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
@@ -32,7 +32,7 @@ class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
                     *
                     FROM video_catalog vc
                     WHERE vc.ts_title @@ phraseto_tsquery('english', $1)
-                    ORDER BY vc.published_by DESC
+                    ORDER BY vc.published_at DESC
                     OFFSET $2
                     LIMIT $3
                 """,
@@ -49,7 +49,7 @@ class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
                     *
                     FROM video_catalog vc
                     WHERE vc.ts_title @@ phraseto_tsquery('english', $1)
-                    ORDER BY vc.published_by DESC
+                    ORDER BY vc.published_at DESC
                     OFFSET $2
                     LIMIT $3
                 """,
@@ -76,7 +76,6 @@ class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
             title=record['title'],
             description=record['description'],
             thumbnails=json.loads(record['thumbnails']),
-            channel_title=record['channel_title'],
             duration_sec=record['duration_sec'],
             likes_count=record['like_count'],
             views_count=record['views_count'],

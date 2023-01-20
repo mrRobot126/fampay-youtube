@@ -21,6 +21,7 @@ CREATE TABLE "video_catalog" (
 
 CREATE TABLE "auth_tokens" (
     "id" INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY NOT NULL,
+    "vendor" VARCHAR NOT NULL,
     "method" VARCHAR NOT NULL,
     "status" VARCHAR NOT NULL,
     "config" JSONB NOT NULL,
@@ -39,6 +40,8 @@ CREATE INDEX ts_vc_description_index ON video_catalog USING GIN (ts_description)
 
 
 
-## Adhoc
-ALTER TABLE "config" ADD COLUMN "vendor" VARCHAR NOT NULL
+-- ## Adhoc
+ALTER TABLE "auth_tokens" ADD COLUMN "vendor" VARCHAR;
+update auth_tokens set vendor = 'google' where id = 1;
 
+INSERT INTO auth_tokens(method, status, config) VALUES('auth_token', 'active', '{"auth_token": "AIzaSyDFDUkNIYX2j-IPQnEU5FnEehzGqKcA4dY"}')

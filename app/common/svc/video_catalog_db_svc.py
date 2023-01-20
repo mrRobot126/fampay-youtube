@@ -2,10 +2,10 @@ from abc import ABC, abstractmethod
 from collections import namedtuple
 from typing import List
 
-from app.common.constants import QueryType, SortOrder
+from common.constants import QueryType, SortOrder
 
-record_tuple = namedtuple('VideoRecordTuple', 'source video_id title description thumbnails channel_title duration_sec likes_count views_count comment_count favourite_count privacy_status published_at content_definition')
-search_record_tuple = namedtuple('VideoSearchTuple', 'video_id title description channel_title likes_count views_count comment_count favourite_count privacy_status published_at content_definition')
+record_tuple = namedtuple('VideoRecordTuple', 'source video_id title description thumbnails duration_sec likes_count views_count comment_count favourite_count privacy_status published_at content_definition')
+search_record_tuple = namedtuple('VideoSearchTuple', 'source video_id title description thumbnails duration_sec likes_count views_count comment_count favourite_count privacy_status published_at content_definition')
 
 class VideoCatalogDBService(ABC):
     

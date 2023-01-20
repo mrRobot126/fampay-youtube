@@ -8,6 +8,7 @@ class ServiceKey(enum.Enum):
     VC_SEARCH_SVC = 3
     VC_DB_SVC = 4
     CONFIG_SVC = 5
+    VIDEO_VENDOR_SVC = 6
 
 class BaseAsyncService(ABC):
 

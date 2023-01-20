@@ -1,14 +1,10 @@
 ## This file contains all req-response models
 
-import datetime
-from typing import List
-from pyparsing import Optional
+from typing import List, Union, Optional, Any
 from pydantic import BaseModel
+from common.constants import QueryType, SortOrder, PAGE_SIZE
 
 
-
-class ChannelDetails(BaseModel):
-    channel_title: str
 
 class ContentDetails(BaseModel):
     privacy_status: str
@@ -24,18 +20,19 @@ class VideoCatalog(BaseModel):
     video_id: str
     title: str
     description: Optional[str]
-    channel_details: ChannelDetails
-    published_at: datetime
-    duration: int
+    thumbnails: Any
+    published_at: int
+    published_at_str: str
+    duration_sec: int
     duration_str: str
     content_details: ContentDetails
     stats: VideoStatistics
     
 
 class VideoCatalogRequest(BaseModel):
-    sort_order: str = "desc"
-    page: int
-    count: int
+    sort_order: Optional[str] = SortOrder.DESC
+    page: int = 0
+    count: int = PAGE_SIZE
 
 class VideoCatalogResponse(BaseModel):
     current_page: int
@@ -45,9 +42,11 @@ class VideoCatalogResponse(BaseModel):
 
 class VideoSearchRequest(BaseModel):
     query: str
-    count: int
+    is_phrase: bool
+    page: int
+    limit: int
 
-class VideoSearchResponse(BaseModel):
+class VideoCatalogSearchResponse(BaseModel):
     query: str
-    count: int
+    page_count: int
     items: List[VideoCatalog]

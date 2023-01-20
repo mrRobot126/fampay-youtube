@@ -1,7 +1,7 @@
 from abc import ABC, abstractmethod
 from collections import namedtuple
 from typing import List
-from app.common.constants import AuthStatus
+from common.constants import AuthStatus
 
 last_sync_tuple = namedtuple('LastSyncTime', 'id vendor last_sync_time')
 auth_record = namedtuple('AuthRecord', 'id vendor method status config')

@@ -33,7 +33,11 @@ CREATE TABLE "config" (
 );
 
 CREATE UNIQUE INDEX ON "video_catalog" ("video_id");
+CREATE UNIQUE INDEX ON "config" ("vendor");
 
+CREATE INDEX index_published_at_for_vc ON video_catalog USING btree (published_at);
+
+CREATE UNIQUE INDEX ON "auth_tokens" ("method", "status", "vendor") WHERE status = 'active';
 
 CREATE INDEX ts_vc_title_index ON video_catalog USING GIN (ts_title);
 CREATE INDEX ts_vc_description_index ON video_catalog USING GIN (ts_description);
@@ -44,4 +48,4 @@ CREATE INDEX ts_vc_description_index ON video_catalog USING GIN (ts_description)
 ALTER TABLE "auth_tokens" ADD COLUMN "vendor" VARCHAR;
 update auth_tokens set vendor = 'google' where id = 1;
 
-INSERT INTO auth_tokens(method, status, config) VALUES('auth_token', 'active', '{"auth_token": "AIzaSyDFDUkNIYX2j-IPQnEU5FnEehzGqKcA4dY"}')
+INSERT INTO auth_tokens(method, status, config, vendor) VALUES('auth_token', 'eligible', '{"auth_token": "AIzaSyDFDUkNIddYX2j-IPQnEU5FnEehzGqKcA4dY"}', 'google')

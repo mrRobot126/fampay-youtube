@@ -29,7 +29,19 @@ class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
             records = await self.conn.fetch(
                 """
                     SELECT
-                    *
+                        vc.source,
+                        vc.video_id,
+                        vc.title,
+                        vc.description,
+                        vc.thumbnails,
+                        vc.duration_sec,
+                        vc.like_count,
+                        vc.views_count,
+                        vc.comment_count,
+                        vc.favourite_count,
+                        vc.privacy_status,
+                        vc.published_at,
+                        vc.content_definition
                     FROM video_catalog vc
                     WHERE vc.ts_title @@ phraseto_tsquery('english', $1)
                     ORDER BY vc.published_at DESC
@@ -46,7 +58,19 @@ class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
             records = await self.conn.fetch(
                 """
                     SELECT
-                    *
+                        vc.source,
+                        vc.video_id,
+                        vc.title,
+                        vc.description,
+                        vc.thumbnails,
+                        vc.duration_sec,
+                        vc.like_count,
+                        vc.views_count,
+                        vc.comment_count,
+                        vc.favourite_count,
+                        vc.privacy_status,
+                        vc.published_at,
+                        vc.content_definition
                     FROM video_catalog vc
                     WHERE vc.ts_title @@ phraseto_tsquery('english', $1)
                     ORDER BY vc.published_at DESC

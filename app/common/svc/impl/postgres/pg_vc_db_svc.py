@@ -60,7 +60,21 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
     async def get_video_record_by_video_id(self, video_id: str) -> record_tuple:
         record = await self.conn.fetchrow(
             """
-                SELECT * FROM video_catalog vc WHERE vc.video_id = $1
+                SELECT 
+                    vc.source,
+                    vc.video_id,
+                    vc.title,
+                    vc.description,
+                    vc.thumbnails,
+                    vc.duration_sec,
+                    vc.like_count,
+                    vc.views_count,
+                    vc.comment_count,
+                    vc.favourite_count,
+                    vc.privacy_status,
+                    vc.published_at,
+                    vc.content_definition
+                FROM video_catalog vc WHERE vc.video_id = $1
             """,
             video_id
         )
@@ -73,7 +87,19 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
         self.logger.error('%s %s %s', offset, limit, sort_order)
         records = await self.conn.fetch("""
             SELECT
-                *
+                vc.source,
+                vc.video_id,
+                vc.title,
+                vc.description,
+                vc.thumbnails,
+                vc.duration_sec,
+                vc.like_count,
+                vc.views_count,
+                vc.comment_count,
+                vc.favourite_count,
+                vc.privacy_status,
+                vc.published_at,
+                vc.content_definition
             FROM video_catalog vc
             ORDER BY vc.published_at desc
             OFFSET $1

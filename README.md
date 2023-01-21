@@ -50,9 +50,9 @@ Using any convenient tool Eg. `psql`
 
 Install docker on your system. 
 
-Build docker images using - `docker-compose build`
-Run the app using `docker-compose up`
-For running in background run using the command `docker-compose up -d`
+1. Build docker images using - `docker-compose build`
+2. Run the app using `docker-compose up`
+3. For running in background run using the command `docker-compose up -d`
 
 <br>
 

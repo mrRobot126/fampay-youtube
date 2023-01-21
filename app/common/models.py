@@ -44,7 +44,7 @@ class VideoSearchRequest(BaseModel):
     query: str
     is_phrase: bool
     page: int
-    limit: int
+    limit: int = PAGE_SIZE
 
 class VideoCatalogSearchResponse(BaseModel):
     query: str

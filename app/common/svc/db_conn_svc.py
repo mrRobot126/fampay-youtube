@@ -2,6 +2,11 @@ import logging
 from common.svc.base_svc import BaseAsyncService
 import asyncpg
 
+"""
+Connection Pool Implementation for DB
+This Helps us to better control DB connections especially in async environments
+TODO: Make min_size and max_size configurable though env variables
+"""
 class DatabaseConnectionPoolSvc(BaseAsyncService):
     def __init__(self, conn_string):
         self.connection_pool = None

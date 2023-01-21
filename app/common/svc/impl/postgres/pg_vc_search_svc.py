@@ -8,6 +8,9 @@ from common.svc.video_catalog_db_svc import VideoCatalogSearchService, search_re
 from common.constants import AuthStatus
 
 
+"""
+Postgresql Implementation of VideoCatalogSearchService
+"""
 class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
 
     logger = logging.getLogger(__name__)
@@ -24,6 +27,10 @@ class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
     def get(self):
         return self
 
+    """
+    Search Video Catalog by Title And Descripiton
+    1. Handles if the Query is a phrase or not ie word order matters or not
+    """
     async def search_catalog_by_title_and_description(self, q: str, type: QueryType, offset: int = 0, limit: int = 20) -> List[search_record_tuple]:
         if type == QueryType.PHRASE:
             records = await self.conn.fetch(

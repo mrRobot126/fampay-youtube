@@ -7,7 +7,9 @@ from common.svc.config_db_svc import ConfigDBService, last_sync_tuple, auth_reco
 from common.svc.db_conn_svc import DatabaseConnectionPoolSvc
 from common.constants import AuthStatus, VideoVendor, AuthMethod
 
-
+"""
+Postgresql Implementation of ConfigDBService
+"""
 class PostgresConfigDBService(BaseAsyncService, ConfigDBService):
 
     logger = logging.getLogger(__name__)

@@ -1,7 +1,9 @@
 from datetime import timedelta
 import re
 
-
+"""
+Utility Function to parse ISO Duration
+"""
 def parse_iso_duration(iso_duration) -> timedelta:
     """Parses an ISO 8601 duration string into a datetime.timedelta instance.
     Args:

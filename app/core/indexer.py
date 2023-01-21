@@ -11,6 +11,12 @@ from common.svc.video_vendor_svc import VideoVendorService, video_search_result,
 from datetime import datetime, timedelta, timezone
 
 queue_record = namedtuple('VideoIngestionQueueRecord', 'video_id')
+
+"""
+Orchestrator responsible for the recurrent indexing of new video records
+1. Uses Queue to handle ingestion rates between producer and consumer
+2. 
+"""
 class VideoIndexerOrchestrator(BaseAsyncService):
 
     logger = logging.getLogger(__name__)
@@ -34,25 +40,33 @@ class VideoIndexerOrchestrator(BaseAsyncService):
     def get(self):
         return self
 
+    """
+    Fetches video records from the vendor
+    """
     async def fetch_videos(self):
         try:
             last_sync_time: last_sync_tuple = await self.config_svc.get_last_sync_time_for_vendor(VideoVendor.GOOGLE)
-            self.logger.error('last synct time %s', last_sync_time)
+            self.logger.debug('last synct time %s', last_sync_time)
             await self.config_svc.upsert_last_sync_time_for_vendor(VideoVendor.GOOGLE, datetime.now(timezone.utc).replace(tzinfo=None))
-            self.logger.error('Updated last sync time %s', last_sync_time)
+            self.logger.debug('Updated last sync time %s', last_sync_time)
             async for record in self.video_vendor_svc.fetch_records(query=self.search_query, published_after=self._get_last_sync_time(last_sync_time)):
-                self.logger.error("Producing some record shit %s", record)
+                self.logger.info("Producing some record %s", record)
                 await self.Queue.put(
                     queue_record(record.video_id)
                 )
         except APIQuotaExpiredException as e:
             self.logger.error('[fetch_videos] Quota expiry %s', e)
+            # TODO: This is a very hacky way of handling quota expiry, need to move away from it
             self.cancel_reason = IndexerCancelReason.QUOTA_EXPIRY
             self.terminate_all_tasks()
         except Exception as e:
             self.logger.error('[fetch_videos] Something went wrong %s', e)
             self.terminate_all_tasks()
 
+    """
+    Upserts Video Records in the DB
+    1. This method is idempotent so that we can handle duplicate ingestion of same video
+    """
     async def handle_video_record(self, record: queue_record):
         try:
             video_record: video_details = await self.video_vendor_svc.fetch_record_details(record.video_id)
@@ -76,6 +90,9 @@ class VideoIndexerOrchestrator(BaseAsyncService):
         except Exception as e:
             self.logger.error("[handle_video_record] Something went wrong while handling record %s", record.video_id)
 
+    """
+    Initialises Producer Coroutines, Adds new task every T sec
+    """
     async def start_producer_stack(self):
         try:
             while(True):
@@ -86,22 +103,32 @@ class VideoIndexerOrchestrator(BaseAsyncService):
         except Exception as e:
             self.logger.error("[start_producer_stack] Caught some exception %s", str(e))
 
+    """
+    Consumer code which deques records from the queue and adds them to DB
+    """
     async def consumer(self):
         while(True):
             q_record: queue_record = await self.Queue.get()
-            self.logger.error("Consuming some record shit %s", q_record)
+            self.logger.info("Consuming some record %s", q_record)
             await self.handle_video_record(q_record)
             self.Queue.task_done()
     
+    """
+    Initialises Consumer Stack
+    counsumer_count - Number of Concurrent Consumers
+    """
     async def start_consumer_stack(self, consumer_count: int):
         for i in range(consumer_count):
             self.logger.error('Adding Consumer %s', i)
             self.consumer_stack.add(asyncio.create_task(self.consumer()))
     
 
+    """
+    Orchestartes the whole whole between producers and consumers
+    """
     async def orchestrate(self):
         try:
-            self.logger.error('Orchestrating shit')
+            self.logger.info('Orchestrating Indexer')
             producer_task = asyncio.create_task(self.start_producer_stack())
             await self.start_consumer_stack(1)
             await asyncio.gather(producer_task, *self.consumer_stack)
@@ -110,11 +137,16 @@ class VideoIndexerOrchestrator(BaseAsyncService):
             if self.cancel_reason == IndexerCancelReason.QUOTA_EXPIRY:
                 await self.handle_quota_expiry()
     
+    
     async def handle_quota_expiry(self):
         self.cancel_reason = None
         await self.video_vendor_svc.handle_quota_expiry()
         await self.orchestrate()
     
+    
+    """
+    Terminates all Producers and Consumers for cleanup
+    """
     def terminate_all_tasks(self):
         self.logger.error('I am terminating everything')
         for p in self.producer_stack:
@@ -123,6 +155,10 @@ class VideoIndexerOrchestrator(BaseAsyncService):
             c.cancel()
 
 
+    """
+    Provides the last sync time for vendor
+    If not provided then defaults to T-20sec
+    """
     def _get_last_sync_time(self, last_sync: last_sync_tuple) -> datetime:
         if last_sync != None and last_sync.last_sync_time != None:
             return last_sync.last_sync_time

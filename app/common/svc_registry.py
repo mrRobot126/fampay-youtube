@@ -8,6 +8,9 @@ from common.svc.impl.postgres.pg_vc_search_svc import PostgresVCSearchService
 from common.svc.video_vendor_svc import VideoVendorService
 from common.constants import VideoVendor, AuthMethod
 
+"""
+This is responsible for maintaining a map of all foundational services which will be required across the board
+"""
 class SvcRegistry:
 
     logger = logging.getLogger(__name__)

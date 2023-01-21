@@ -6,7 +6,9 @@ from common.svc.base_svc import BaseAsyncService
 from common.svc.db_conn_svc import DatabaseConnectionPoolSvc
 from common.svc.video_catalog_db_svc import VideoCatalogDBService, record_tuple
 
-
+"""
+Postgresql Implementation of VideoCatalogDBService
+"""
 class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
 
     logger = logging.getLogger(__name__)

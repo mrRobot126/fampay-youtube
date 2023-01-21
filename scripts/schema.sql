@@ -35,17 +35,18 @@ CREATE TABLE "config" (
 CREATE UNIQUE INDEX ON "video_catalog" ("video_id");
 CREATE UNIQUE INDEX ON "config" ("vendor");
 
+-- Helps in speeding up pagination
 CREATE INDEX index_published_at_for_vc ON video_catalog USING btree (published_at);
 
+-- This is done so to make sure only one config is in ACTIVE state at time
 CREATE UNIQUE INDEX ON "auth_tokens" ("method", "status", "vendor") WHERE status = 'active';
 
+-- Below indexes have been done to support full-text search in postgres
 CREATE INDEX ts_vc_title_index ON video_catalog USING GIN (ts_title);
 CREATE INDEX ts_vc_description_index ON video_catalog USING GIN (ts_description);
 
+-- Add Records to Auth table Eg
+INSERT INTO auth_tokens(method, status, config, vendor) VALUES('auth_token', 'active', '{"auth_token": "AIzaSyDFDUkNIddYX2j-IPQnEU5FnEehzGqKcA4dY"}', 'google')
 
-
--- ## Adhoc
-ALTER TABLE "auth_tokens" ADD COLUMN "vendor" VARCHAR;
-update auth_tokens set vendor = 'google' where id = 1;
-
+-- Add Eligible Records to support Key Rotation
 INSERT INTO auth_tokens(method, status, config, vendor) VALUES('auth_token', 'eligible', '{"auth_token": "AIzaSyDFDUkNIddYX2j-IPQnEU5FnEehzGqKcA4dY"}', 'google')

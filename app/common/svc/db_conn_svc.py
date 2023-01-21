@@ -14,6 +14,7 @@ class DatabaseConnectionPoolSvc(BaseAsyncService):
         self.logger = logging.getLogger(__name__)
 
     async def init(self):
+        self.logger.error('Connection String: %s', self.conn_string)
         self.connection_pool = await asyncpg.create_pool(dsn = self.conn_string, min_size=10, max_size=20)
         return self.connection_pool
 

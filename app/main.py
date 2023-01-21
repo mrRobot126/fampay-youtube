@@ -1,6 +1,7 @@
 import asyncio
 import logging
 from mmap import PAGESIZE
+import os
 import sys
 from common.svc.base_svc import ServiceKey
 from core.video_catalog_svc import get_paginated_catalog, search_video
@@ -51,7 +52,7 @@ Application Startup Logic
 async def startup():
     svc_registry = SvcRegistry(
         {
-            "db_conn": "postgresql://postgres:secret@127.0.0.1:6000/fampay",
+            "db_conn": os.getenv("DATABASE_URL"),
             "query": "football"
         }
     )

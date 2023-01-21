@@ -25,7 +25,10 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
     def get(self):
         return self
 
-
+    """
+    Upserts Video Record into the DB
+    1. Resolves conflicts and updates respective attributes accordingly
+    """
     async def upsert_video_record(self, record: record_tuple):
         result = await self.conn.fetchrow(
             """
@@ -59,6 +62,7 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
         )
         return result['id']
 
+
     async def get_video_record_by_video_id(self, video_id: str) -> record_tuple:
         record = await self.conn.fetchrow(
             """
@@ -85,6 +89,9 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
         return self._parse_video_record(record)
 
 
+    """
+    Provides Paginated Response of Catalog Ordered by published_at
+    """
     async def get_records_by_published_date(self, offset: int, limit: int, sort_order: SortOrder):
         self.logger.error('%s %s %s', offset, limit, sort_order)
         records = await self.conn.fetch("""

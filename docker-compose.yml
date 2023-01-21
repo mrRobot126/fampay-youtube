@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+  app:
+    build:
+      context: ./app
+    container_name: fampay-youtube
+    environment: 
+      - DATABASE_URL=postgresql://postgres:secret@host.docker.internal:6000/fampay
+    build:
+      context: ./app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./app:/app
+    command: >
+      sh -c "uvicorn main:app --reload --host 0.0.0.0"
+    network_mode: "host"

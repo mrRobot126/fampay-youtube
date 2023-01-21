@@ -66,6 +66,5 @@ uvicorn main:app --reload --host 0.0.0.0
 
 ## API Docs
 
-- Head to `/docs` url for Swagger docs 
-- ### http://localhost:8000/docs
+- Head to [`/docs`](http://localhost:8000/docs) url for Swagger docs 
 

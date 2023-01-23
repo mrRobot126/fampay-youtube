@@ -115,7 +115,7 @@ class PostgresVideoCatalogDBService(BaseAsyncService, VideoCatalogDBService):
             LIMIT $2
         """,
         offset,
-        limit,
+        limit
         )
 
         if (records):

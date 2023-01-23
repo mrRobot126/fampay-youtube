@@ -52,7 +52,7 @@ Application Startup Logic
 async def startup():
     svc_registry = SvcRegistry(
         {
-            "db_conn": os.getenv("DATABASE_URL", "postgresql://postgres:secret@localhost:6000/fampay"),
+            "db_conn": os.getenv("DATABASE_URL"),
             "query": "football"
         }
     )

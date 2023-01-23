@@ -11,10 +11,10 @@ class ContentDetails(BaseModel):
     definition: str
 
 class VideoStatistics(BaseModel):
-    views_count: int
-    likes_count: int
-    favourite_count: int
-    comment_count: int
+    views_count: int = 0
+    likes_count: int = 0
+    favourite_count: int = 0
+    comment_count: int = 0
 
 class VideoCatalog(BaseModel):
     video_id: str

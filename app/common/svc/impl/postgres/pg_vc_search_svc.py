@@ -50,7 +50,10 @@ class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
                         vc.published_at,
                         vc.content_definition
                     FROM video_catalog vc
-                    WHERE vc.ts_title @@ phraseto_tsquery('english', $1)
+                    WHERE (
+                        vc.ts_title @@ phraseto_tsquery('english', $1) 
+                        OR vc.ts_description @@ phraseto_tsquery('english', $1)
+                    )
                     ORDER BY vc.published_at DESC
                     OFFSET $2
                     LIMIT $3
@@ -79,7 +82,10 @@ class PostgresVCSearchService(BaseAsyncService, VideoCatalogSearchService):
                         vc.published_at,
                         vc.content_definition
                     FROM video_catalog vc
-                    WHERE vc.ts_title @@ phraseto_tsquery('english', $1)
+                    WHERE (
+                        vc.ts_title @@ to_tsquery('english', $1) 
+                        OR vc.ts_description @@ to_tsquery('english', $1)
+                    )
                     ORDER BY vc.published_at DESC
                     OFFSET $2
                     LIMIT $3
